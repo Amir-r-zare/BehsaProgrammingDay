@@ -1,0 +1,39 @@
+SET SERVEROUTPUT ON SIZE UNLIMITED
+SET LINESIZE 200
+
+DECLARE
+    TYPE t_row IS TABLE OF VARCHAR2(1) INDEX BY PLS_INTEGER;
+    TYPE t_grid IS TABLE OF t_row INDEX BY PLS_INTEGER;
+    v_grid t_grid;
+    v_line VARCHAR2(200);
+    v_gx PLS_INTEGER;
+    v_gy PLS_INTEGER;
+BEGIN
+    -- مقداردهی اولیه بوم متنی با فاصله خالی
+    FOR y IN 0..49 LOOP
+        FOR x IN 0..160 LOOP
+            v_grid(y)(x) := ' ';
+        END LOOP;
+    END LOOP;
+
+-- خواندن داده‌ها و تبدیل مختصات همگن به دوبعدی
+FOR r IN (SELECT X, Y, W FROM PUZZLE_DATA.PUZZLE) LOOP
+    v_gx := ROUND((r.X / r.W - 115) / 4);
+    v_gy := ROUND((r.Y / r.W - 136) / 2);
+    IF v_gx BETWEEN 0 AND 160 AND v_gy BETWEEN 0 AND 49 THEN
+        v_grid(v_gy)(v_gx) := '#';
+    END IF;
+END LOOP;
+
+-- چاپ کاراکترها از بالا به پایین
+FOR y IN REVERSE 0..49 LOOP
+    v_line := '';
+    FOR x IN 0..160 LOOP
+        v_line := v_line || v_grid(y)(x);
+    END LOOP;
+    IF TRIM(v_line) IS NOT NULL THEN
+        DBMS_OUTPUT.PUT_LINE(v_line);
+    END IF;
+END LOOP;
+END;
+/
